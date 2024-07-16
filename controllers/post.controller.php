@@ -8,6 +8,7 @@ require_once "vendor/autoload.php";
 use Firebase\JWT\JWT;
 
 require_once "models/put.model.php";
+require_once "email.php";
 
 class PostController{
 
@@ -216,7 +217,7 @@ class PostController{
 			$expiration = date('Y-m-d H:i:s', strtotime('+1 hour'));
 			
 			$updateData = [
-				"reset_code_".$suffix => $code, // Almacenamos el código sin hash
+				"reset_code_".$suffix => $code,
 				"reset_code_exp_".$suffix => $expiration,
 				"reset_attempts_".$suffix => 0
 			];
@@ -224,13 +225,21 @@ class PostController{
 			$update = PutModel::putData($table, $updateData, $user[0]->{"id_".$suffix}, "id_".$suffix);
 			
 			if (isset($update["comment"]) && $update["comment"] == "The process was successful") {
-				// Aquí deberías implementar el envío del email con el código
-				// Por ahora, solo mostraremos el código en la respuesta (no hagas esto en producción)
-				$this->fncResponse([
-					"message" => "Recovery code sent",
-					"code" => $code, // Elimina esta línea en producción
-					"expires" => $expiration
-				], null, $suffix);
+				// Crear una instancia de EmailSender
+				$emailSender = new EmailSender();
+				
+				// Enviar el correo
+				$emailSent = $emailSender->sendRecoveryCode($data["email_".$suffix], $code);
+				
+				if ($emailSent) {
+					
+					error_log("Email enviado correctamente");
+					$this->fncResponse([
+						"message" => "Recovery code sent to your email"
+					], null, $suffix);
+				} else {
+					$this->fncResponse(null, "Error sending email", $suffix);
+				}
 			} else {
 				$this->fncResponse(null, "Error updating user", $suffix);
 			}
@@ -238,8 +247,6 @@ class PostController{
 			$this->fncResponse(null, "Email not found", $suffix);
 		}
 	}
-
-   
 	/*=============================================
 	Metodo para verificar y validar el codigo enviado
 	=============================================*/
