@@ -24,7 +24,7 @@ class EmailSender {
         $this->mailer->Port       = 465;
         $this->mailer->CharSet    = 'UTF-8';
         $this->mailer->Timeout    = 30; // Añade un timeout
-        $this->mailer->setFrom('info@uptc.online', 'Tu Empresa');
+        $this->mailer->setFrom('info@uptc.online', 'crediapp');
         $this->mailer->isHTML(true);
     }
 
@@ -77,7 +77,7 @@ class EmailSender {
                 </div>
                 <div class='footer'>
                     <p>Este es un correo automático, por favor no respondas a esta dirección.</p>
-                    <p>© " . date('Y') . " Tu Empresa. Todos los derechos reservados.</p>
+                    <p>© " . date('Y') . " crediapp. Todos los derechos reservados.</p>
                 </div>
             </div>
         </body>
